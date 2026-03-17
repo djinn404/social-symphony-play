@@ -1,47 +1,41 @@
 import { motion } from "framer-motion";
-import { Home, Search, PlusCircle, Inbox, User } from "lucide-react";
-import { useState } from "react";
+import { Home, Search, Play, MessageCircle, User } from "lucide-react";
+import { useLocation, useNavigate } from "react-router-dom";
 
 const dockItems = [
-  { id: "home", icon: Home, label: "Feed" },
-  { id: "search", icon: Search, label: "Explorer" },
-  { id: "create", icon: PlusCircle, label: "Créer" },
-  { id: "inbox", icon: Inbox, label: "Messages", badge: 12 },
-  { id: "profile", icon: User, label: "Profil" },
+  { id: "home", path: "/", icon: Home, label: "Feed" },
+  { id: "explore", path: "/explore", icon: Search, label: "Explorer" },
+  { id: "videos", path: "/videos", icon: Play, label: "Vidéos" },
+  { id: "spaces", path: "/spaces", icon: MessageCircle, label: "Espaces" },
+  { id: "profile", path: "/profile", icon: User, label: "Profil" },
 ];
 
 export default function BottomDock() {
-  const [active, setActive] = useState("home");
+  const location = useLocation();
+  const navigate = useNavigate();
 
   return (
     <nav className="fixed bottom-0 left-0 right-0 z-50 md:left-[68px]">
-      <div className="backdrop-blur-xl bg-background/80 border-t border-border/50">
+      <div className="backdrop-blur-xl bg-background/80 border-t border-border/30">
         <div className="flex items-center justify-around h-14 max-w-lg mx-auto px-4">
           {dockItems.map((item) => {
             const Icon = item.icon;
-            const isActive = active === item.id;
+            const isActive = location.pathname === item.path;
 
             return (
               <motion.button
                 key={item.id}
                 whileTap={{ scale: 0.96 }}
-                onClick={() => setActive(item.id)}
+                onClick={() => navigate(item.path)}
                 className="relative flex flex-col items-center gap-0.5"
               >
-                <div className="relative">
-                  <Icon
-                    size={22}
-                    className={`transition-colors duration-150 ${
-                      isActive ? "text-foreground" : "text-muted-foreground"
-                    }`}
-                    strokeWidth={isActive ? 2.2 : 1.8}
-                  />
-                  {item.badge && (
-                    <span className="absolute -top-1.5 -right-2.5 min-w-[16px] h-4 flex items-center justify-center px-1 bg-accent text-accent-foreground text-[10px] font-semibold rounded-full">
-                      {item.badge}
-                    </span>
-                  )}
-                </div>
+                <Icon
+                  size={21}
+                  className={`transition-colors duration-150 ${
+                    isActive ? "text-foreground" : "text-muted-foreground"
+                  }`}
+                  strokeWidth={isActive ? 2.2 : 1.6}
+                />
                 <span
                   className={`text-[10px] transition-colors duration-150 ${
                     isActive ? "text-foreground font-medium" : "text-muted-foreground"

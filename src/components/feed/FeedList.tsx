@@ -1,5 +1,5 @@
 import { motion } from "framer-motion";
-import { Heart, MessageCircle, Share2, Bookmark, Play, Volume2 } from "lucide-react";
+import { Heart, MessageCircle, Repeat2, Share, Bookmark, MoreHorizontal } from "lucide-react";
 import avatar1 from "@/assets/avatar-1.jpg";
 import feed1 from "@/assets/feed-1.jpg";
 import feed2 from "@/assets/feed-2.jpg";
@@ -8,11 +8,11 @@ import feed3 from "@/assets/feed-3.jpg";
 interface FeedPost {
   id: string;
   author: { name: string; handle: string; avatar: string; verified?: boolean };
-  media: { type: "image" | "video"; src: string; aspect?: string; duration?: string };
-  caption: string;
+  text?: string;
+  media?: { src: string; aspect?: string };
   likes: string;
   comments: string;
-  shares: string;
+  reposts: string;
   timestamp: string;
 }
 
@@ -20,56 +20,64 @@ const posts: FeedPost[] = [
   {
     id: "1",
     author: { name: "Nova FX", handle: "@nova.fx", avatar: avatar1, verified: true },
-    media: { type: "video", src: feed1, aspect: "aspect-[9/16]", duration: "2:34" },
-    caption: "Tokyo at 3AM hits different 🌃 #nightlife #cinematic",
+    text: "Tokyo at 3AM hits different 🌃 Le calme avant la tempête créative.",
+    media: { src: feed1, aspect: "aspect-[4/5]" },
     likes: "24.3k",
     comments: "1.2k",
-    shares: "892",
+    reposts: "892",
     timestamp: "2h",
   },
   {
     id: "2",
-    author: { name: "Earth Views", handle: "@earth.views", avatar: avatar1 },
-    media: { type: "image", src: feed2, aspect: "aspect-square" },
-    caption: "Iceland's black sand beaches from above 🌊",
-    likes: "18.7k",
-    comments: "432",
-    shares: "2.1k",
-    timestamp: "4h",
+    author: { name: "Kira ✦", handle: "@kira.design", avatar: avatar1 },
+    text: "Hot take: les meilleures interfaces sont celles qu'on ne remarque pas. L'invisible est le nouveau luxe en design.",
+    likes: "8.1k",
+    comments: "342",
+    reposts: "1.4k",
+    timestamp: "3h",
   },
   {
     id: "3",
+    author: { name: "Earth Views", handle: "@earth.views", avatar: avatar1 },
+    media: { src: feed2, aspect: "aspect-square" },
+    likes: "18.7k",
+    comments: "432",
+    reposts: "2.1k",
+    timestamp: "4h",
+  },
+  {
+    id: "4",
     author: { name: "Cyber Lab", handle: "@cyber.lab", avatar: avatar1, verified: true },
-    media: { type: "video", src: feed3, aspect: "aspect-[9/16]", duration: "0:58" },
-    caption: "Le futur de la réalité augmentée est là ⚡",
+    text: "Le futur de la réalité augmentée est là ⚡ On travaille sur quelque chose d'incroyable. Stay tuned.",
+    media: { src: feed3, aspect: "aspect-[4/5]" },
     likes: "45.1k",
     comments: "3.4k",
-    shares: "5.6k",
+    reposts: "5.6k",
     timestamp: "6h",
   },
 ];
 
 export default function FeedList() {
   return (
-    <div className="flex flex-col gap-3 px-2 md:px-4 max-w-xl mx-auto">
+    <div className="flex flex-col divide-y divide-border/30">
       {posts.map((post, i) => (
         <motion.article
           key={post.id}
-          initial={{ opacity: 0, y: 8 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.3, delay: i * 0.1, ease: [0.2, 0, 0, 1] }}
-          className="group relative rounded-2xl bg-card p-3 shadow-aura transition-all hover:shadow-aura-hover"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.25, delay: i * 0.06 }}
+          className="px-4 py-3 hover:bg-surface/30 transition-colors"
         >
-          {/* Author header */}
-          <div className="flex items-center gap-2.5 mb-2.5">
+          <div className="flex gap-3">
             <img
               src={post.author.avatar}
               alt={post.author.name}
-              className="w-8 h-8 rounded-full object-cover"
+              className="w-9 h-9 rounded-full object-cover flex-shrink-0"
             />
             <div className="flex-1 min-w-0">
+              {/* Header */}
               <div className="flex items-center gap-1.5">
-                <span className="text-sm font-semibold text-foreground truncate">
+                <span className="text-[14px] font-semibold text-foreground truncate">
                   {post.author.name}
                 </span>
                 {post.author.verified && (
@@ -77,68 +85,56 @@ export default function FeedList() {
                     <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z" />
                   </svg>
                 )}
+                <span className="text-xs text-muted-foreground truncate">{post.author.handle}</span>
+                <span className="text-muted-foreground text-xs">·</span>
+                <span className="font-mono-utility text-[11px] text-muted-foreground flex-shrink-0">{post.timestamp}</span>
+                <button className="ml-auto text-muted-foreground hover:text-foreground">
+                  <MoreHorizontal size={16} />
+                </button>
               </div>
-              <span className="text-xs text-muted-foreground">{post.author.handle}</span>
-            </div>
-            <span className="font-mono-utility text-[11px] text-muted-foreground">{post.timestamp}</span>
-          </div>
 
-          {/* Media */}
-          <div className={`relative rounded-xl overflow-hidden ${post.media.aspect || "aspect-video"} bg-surface`}>
-            <img
-              src={post.media.src}
-              alt={post.caption}
-              className="w-full h-full object-cover"
-            />
-            {post.media.type === "video" && (
-              <>
-                <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                  <div className="w-12 h-12 rounded-full bg-background/60 backdrop-blur-sm flex items-center justify-center">
-                    <Play size={20} className="text-foreground ml-0.5" fill="currentColor" />
-                  </div>
+              {/* Text */}
+              {post.text && (
+                <p className="text-[14px] text-foreground leading-[1.45] mt-1">
+                  {post.text}
+                </p>
+              )}
+
+              {/* Media */}
+              {post.media && (
+                <div className={`relative rounded-xl overflow-hidden mt-2.5 ${post.media.aspect || "aspect-video"} bg-surface`}>
+                  <img
+                    src={post.media.src}
+                    alt=""
+                    className="w-full h-full object-cover"
+                  />
                 </div>
-                <div className="absolute bottom-2 right-2 flex items-center gap-2">
-                  <span className="font-mono-utility text-[11px] text-foreground bg-background/60 backdrop-blur-sm px-1.5 py-0.5 rounded">
-                    {post.media.duration}
-                  </span>
-                  <button className="w-6 h-6 rounded-full bg-background/60 backdrop-blur-sm flex items-center justify-center">
-                    <Volume2 size={12} className="text-foreground" />
-                  </button>
-                </div>
-              </>
-            )}
-          </div>
+              )}
 
-          {/* Actions */}
-          <div className="flex items-center justify-between mt-2.5 px-1">
-            <div className="flex items-center gap-4">
-              <ActionButton icon={Heart} count={post.likes} />
-              <ActionButton icon={MessageCircle} count={post.comments} />
-              <ActionButton icon={Share2} count={post.shares} />
+              {/* Actions - X/Twitter style */}
+              <div className="flex items-center justify-between mt-2.5 max-w-[360px]">
+                <ActionBtn icon={MessageCircle} count={post.comments} hoverColor="text-accent" />
+                <ActionBtn icon={Repeat2} count={post.reposts} hoverColor="text-online" />
+                <ActionBtn icon={Heart} count={post.likes} hoverColor="text-live" />
+                <ActionBtn icon={Share} hoverColor="text-accent" />
+                <ActionBtn icon={Bookmark} hoverColor="text-accent" />
+              </div>
             </div>
-            <motion.button whileTap={{ scale: 0.96 }} className="text-muted-foreground hover:text-foreground transition-colors">
-              <Bookmark size={18} />
-            </motion.button>
           </div>
-
-          {/* Caption */}
-          <p className="text-sm text-foreground mt-2 px-1 leading-relaxed">
-            {post.caption}
-          </p>
         </motion.article>
       ))}
     </div>
   );
 }
 
-function ActionButton({ icon: Icon, count }: { icon: typeof Heart; count: string }) {
+function ActionBtn({ icon: Icon, count, hoverColor }: { icon: typeof Heart; count?: string; hoverColor: string }) {
   return (
     <motion.button
       whileTap={{ scale: 0.96 }}
-      className="flex items-center gap-1.5 text-muted-foreground hover:text-foreground transition-colors"
+      className={`flex items-center gap-1 text-muted-foreground hover:${hoverColor} transition-colors group`}
     >
-      <Icon size={18} />
-      <span className="font-mono-utility text-xs">{count}</span>
+      <Icon size={16} strokeWidth={1.6} />
+      {count && <span className="font-mono-utility text-[11px]">{count}</span>}
     </motion.button>
   );
 }
