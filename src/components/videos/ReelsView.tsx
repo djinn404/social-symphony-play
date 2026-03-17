@@ -1,5 +1,6 @@
 import { useState, useRef, useCallback, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import { Heart, MessageCircle, Share, Bookmark, Music2, MoreHorizontal, ArrowLeft } from "lucide-react";
 import { Heart, MessageCircle, Share, Bookmark, Music2, MoreHorizontal } from "lucide-react";
 import avatar1 from "@/assets/avatar-1.jpg";
 import feed1 from "@/assets/feed-1.jpg";
