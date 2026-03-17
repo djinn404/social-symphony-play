@@ -1,8 +1,9 @@
 import { motion } from "framer-motion";
 import { useState } from "react";
-import { Hash, Volume2, ChevronDown, Plus, Settings, Users, Mic, Headphones, Lock } from "lucide-react";
+import { Hash, Volume2, ChevronDown, Plus, Settings, Users, Mic, Headphones, Lock, Megaphone, Menu } from "lucide-react";
 import avatar1 from "@/assets/avatar-1.jpg";
 import AppLayout from "@/components/layout/AppLayout";
+import CreateChannelModal from "@/components/spaces/CreateChannelModal";
 
 interface Channel {
   id: string;
@@ -17,57 +18,39 @@ interface Category {
   channels: Channel[];
 }
 
-interface SpaceData {
-  id: string;
-  name: string;
-  initial: string;
-  color: string;
-  members: number;
-  online: number;
-  categories: Category[];
-}
-
-const mockSpace: SpaceData = {
-  id: "1",
-  name: "Design Hub",
-  initial: "D",
-  color: "hsl(210, 100%, 50%)",
-  members: 12400,
-  online: 342,
-  categories: [
-    {
-      name: "INFORMATIONS",
-      channels: [
-        { id: "c1", name: "règles", type: "announcement", locked: true },
-        { id: "c2", name: "annonces", type: "announcement" },
-      ],
-    },
-    {
-      name: "GÉNÉRAL",
-      channels: [
-        { id: "c3", name: "discussion", type: "text", unread: 24 },
-        { id: "c4", name: "présentations", type: "text" },
-        { id: "c5", name: "partage", type: "text", unread: 8 },
-      ],
-    },
-    {
-      name: "VOCAL",
-      channels: [
-        { id: "c6", name: "Lounge", type: "voice" },
-        { id: "c7", name: "Collaboration", type: "voice" },
-        { id: "c8", name: "Stream", type: "voice" },
-      ],
-    },
-    {
-      name: "PROJETS",
-      channels: [
-        { id: "c9", name: "feedback", type: "text", unread: 3 },
-        { id: "c10", name: "showcase", type: "text" },
-        { id: "c11", name: "ressources", type: "text" },
-      ],
-    },
-  ],
-};
+const initialCategories: Category[] = [
+  {
+    name: "INFORMATIONS",
+    channels: [
+      { id: "c1", name: "règles", type: "announcement", locked: true },
+      { id: "c2", name: "annonces", type: "announcement" },
+    ],
+  },
+  {
+    name: "GÉNÉRAL",
+    channels: [
+      { id: "c3", name: "discussion", type: "text", unread: 24 },
+      { id: "c4", name: "présentations", type: "text" },
+      { id: "c5", name: "partage", type: "text", unread: 8 },
+    ],
+  },
+  {
+    name: "VOCAL",
+    channels: [
+      { id: "c6", name: "Lounge", type: "voice" },
+      { id: "c7", name: "Collaboration", type: "voice" },
+      { id: "c8", name: "Stream", type: "voice" },
+    ],
+  },
+  {
+    name: "PROJETS",
+    channels: [
+      { id: "c9", name: "feedback", type: "text", unread: 3 },
+      { id: "c10", name: "showcase", type: "text" },
+      { id: "c11", name: "ressources", type: "text" },
+    ],
+  },
+];
 
 const onlineMembers = [
   { name: "Nova FX", status: "En stream", avatar: avatar1 },
@@ -93,66 +76,109 @@ const mockMessages: Message[] = [
   { id: "m5", author: "Earth Views", avatar: avatar1, content: "Les auto-layout sont aussi bien améliorés, regardez cette preview", time: "14:32" },
 ];
 
+function getChannelIcon(type: string, size = 14) {
+  if (type === "voice") return <Volume2 size={size} className="flex-shrink-0" />;
+  if (type === "announcement") return <Megaphone size={size} className="flex-shrink-0" />;
+  return <Hash size={size} className="flex-shrink-0" />;
+}
+
 export default function SpacesPage() {
+  const [categories, setCategories] = useState<Category[]>(initialCategories);
   const [activeChannel, setActiveChannel] = useState("c3");
   const [showMembers, setShowMembers] = useState(false);
+  const [showCreateModal, setShowCreateModal] = useState(false);
+  const [showMobileSidebar, setShowMobileSidebar] = useState(false);
+
+  const allChannels = categories.flatMap((c) => c.channels);
+  const currentChannel = allChannels.find((ch) => ch.id === activeChannel);
+  const categoryNames = categories.map((c) => c.name);
+
+  const handleCreateChannel = (data: { name: string; type: "text" | "voice" | "announcement"; category: string; isPrivate: boolean }) => {
+    const newChannel: Channel = {
+      id: `c${Date.now()}`,
+      name: data.name,
+      type: data.type,
+      locked: data.isPrivate,
+    };
+
+    setCategories((prev) => {
+      const existing = prev.find((c) => c.name === data.category);
+      if (existing) {
+        return prev.map((c) =>
+          c.name === data.category
+            ? { ...c, channels: [...c.channels, newChannel] }
+            : c
+        );
+      }
+      return [...prev, { name: data.category, channels: [newChannel] }];
+    });
+
+    setActiveChannel(newChannel.id);
+  };
+
+  const channelList = (
+    <>
+      <div className="flex-1 overflow-y-auto py-2 px-2">
+        {categories.map((cat) => (
+          <div key={cat.name} className="mb-3">
+            <div className="flex items-center justify-between px-1 mb-1 group">
+              <div className="flex items-center gap-1">
+                <ChevronDown size={10} className="text-muted-foreground" />
+                <span className="text-[10px] font-semibold text-muted-foreground tracking-wider">{cat.name}</span>
+              </div>
+              <button
+                onClick={() => setShowCreateModal(true)}
+                className="opacity-0 group-hover:opacity-100 text-muted-foreground hover:text-foreground transition-opacity"
+              >
+                <Plus size={12} />
+              </button>
+            </div>
+            {cat.channels.map((ch) => (
+              <button
+                key={ch.id}
+                onClick={() => { setActiveChannel(ch.id); setShowMobileSidebar(false); }}
+                className={`w-full flex items-center gap-2 px-2 py-1 rounded-md text-[13px] transition-colors ${
+                  activeChannel === ch.id
+                    ? "bg-surface-active text-foreground"
+                    : "text-muted-foreground hover:text-foreground hover:bg-surface/50"
+                }`}
+              >
+                {getChannelIcon(ch.type)}
+                <span className="truncate">{ch.name}</span>
+                {ch.locked && <Lock size={10} className="ml-auto text-muted-foreground" />}
+                {ch.unread && (
+                  <span className="ml-auto text-[10px] bg-accent text-accent-foreground px-1.5 rounded-full font-medium">
+                    {ch.unread}
+                  </span>
+                )}
+              </button>
+            ))}
+          </div>
+        ))}
+      </div>
+
+      <div className="p-2 border-t border-border/30">
+        <button
+          onClick={() => setShowCreateModal(true)}
+          className="w-full flex items-center gap-2 px-2 py-1.5 rounded-md text-[12px] text-muted-foreground hover:text-foreground hover:bg-surface/50 transition-colors"
+        >
+          <Plus size={14} />
+          <span>Créer un salon</span>
+        </button>
+      </div>
+    </>
+  );
 
   return (
     <AppLayout>
       <div className="flex h-full">
-        {/* Channel sidebar */}
-        <div className="w-[220px] bg-surface/50 border-r border-border/30 flex flex-col hidden md:flex">
-          {/* Space header */}
+        {/* Desktop channel sidebar */}
+        <div className="w-[220px] bg-surface/50 border-r border-border/30 hidden md:flex flex-col">
           <div className="h-12 flex items-center justify-between px-3 border-b border-border/30">
-            <h2 className="text-sm font-semibold text-foreground truncate">{mockSpace.name}</h2>
+            <h2 className="text-sm font-semibold text-foreground truncate">Design Hub</h2>
             <ChevronDown size={16} className="text-muted-foreground" />
           </div>
-
-          {/* Channels */}
-          <div className="flex-1 overflow-y-auto py-2 px-2">
-            {mockSpace.categories.map((cat) => (
-              <div key={cat.name} className="mb-3">
-                <div className="flex items-center gap-1 px-1 mb-1">
-                  <ChevronDown size={10} className="text-muted-foreground" />
-                  <span className="text-[10px] font-semibold text-muted-foreground tracking-wider">{cat.name}</span>
-                </div>
-                {cat.channels.map((ch) => (
-                  <button
-                    key={ch.id}
-                    onClick={() => setActiveChannel(ch.id)}
-                    className={`w-full flex items-center gap-2 px-2 py-1 rounded-md text-[13px] transition-colors ${
-                      activeChannel === ch.id
-                        ? "bg-surface-active text-foreground"
-                        : "text-muted-foreground hover:text-foreground hover:bg-surface/50"
-                    }`}
-                  >
-                    {ch.type === "voice" ? (
-                      <Volume2 size={14} className="flex-shrink-0" />
-                    ) : (
-                      <Hash size={14} className="flex-shrink-0" />
-                    )}
-                    <span className="truncate">{ch.name}</span>
-                    {ch.locked && <Lock size={10} className="ml-auto text-muted-foreground" />}
-                    {ch.unread && (
-                      <span className="ml-auto text-[10px] bg-accent text-accent-foreground px-1.5 rounded-full font-medium">
-                        {ch.unread}
-                      </span>
-                    )}
-                  </button>
-                ))}
-              </div>
-            ))}
-          </div>
-
-          {/* Create channel */}
-          <div className="p-2 border-t border-border/30">
-            <button className="w-full flex items-center gap-2 px-2 py-1.5 rounded-md text-[12px] text-muted-foreground hover:text-foreground hover:bg-surface/50 transition-colors">
-              <Plus size={14} />
-              <span>Créer un salon</span>
-            </button>
-          </div>
-
-          {/* User bar */}
+          {channelList}
           <div className="p-2 border-t border-border/30 flex items-center gap-2">
             <div className="relative">
               <img src={avatar1} alt="" className="w-7 h-7 rounded-full object-cover" />
@@ -170,16 +196,46 @@ export default function SpacesPage() {
           </div>
         </div>
 
+        {/* Mobile sidebar overlay */}
+        {showMobileSidebar && (
+          <>
+            <div className="fixed inset-0 bg-background/60 z-40 md:hidden" onClick={() => setShowMobileSidebar(false)} />
+            <motion.div
+              initial={{ x: -260 }}
+              animate={{ x: 0 }}
+              exit={{ x: -260 }}
+              transition={{ duration: 0.2, ease: [0.2, 0, 0, 1] }}
+              className="fixed left-0 top-0 bottom-0 w-[260px] bg-card z-50 flex flex-col md:hidden"
+            >
+              <div className="h-12 flex items-center justify-between px-3 border-b border-border/30">
+                <h2 className="text-sm font-semibold text-foreground">Design Hub</h2>
+                <button onClick={() => setShowMobileSidebar(false)} className="text-muted-foreground">
+                  <ChevronDown size={16} className="rotate-90" />
+                </button>
+              </div>
+              {channelList}
+            </motion.div>
+          </>
+        )}
+
         {/* Chat area */}
         <div className="flex-1 flex flex-col">
-          {/* Channel header */}
           <div className="h-12 flex items-center justify-between px-4 border-b border-border/30">
             <div className="flex items-center gap-2">
-              <Hash size={16} className="text-muted-foreground" />
-              <span className="text-sm font-medium text-foreground">discussion</span>
+              <button onClick={() => setShowMobileSidebar(true)} className="md:hidden text-muted-foreground hover:text-foreground">
+                <Menu size={18} />
+              </button>
+              {getChannelIcon(currentChannel?.type || "text", 16)}
+              <span className="text-sm font-medium text-foreground">{currentChannel?.name || "discussion"}</span>
             </div>
             <div className="flex items-center gap-3">
-              <span className="font-mono-utility text-[11px] text-muted-foreground">{mockSpace.online} en ligne</span>
+              <button
+                onClick={() => setShowCreateModal(true)}
+                className="text-muted-foreground hover:text-accent transition-colors"
+                title="Créer un salon"
+              >
+                <Plus size={16} />
+              </button>
               <button
                 onClick={() => setShowMembers(!showMembers)}
                 className={`text-muted-foreground hover:text-foreground transition-colors ${showMembers ? "text-foreground" : ""}`}
@@ -190,7 +246,6 @@ export default function SpacesPage() {
           </div>
 
           <div className="flex flex-1 overflow-hidden">
-            {/* Messages */}
             <div className="flex-1 flex flex-col">
               <div className="flex-1 overflow-y-auto p-4 space-y-4">
                 {mockMessages.map((msg) => (
@@ -212,20 +267,18 @@ export default function SpacesPage() {
                 ))}
               </div>
 
-              {/* Message input */}
               <div className="p-3 border-t border-border/30">
                 <div className="flex items-center gap-2 bg-surface rounded-xl px-3 py-2">
                   <Plus size={18} className="text-muted-foreground" />
                   <input
                     type="text"
-                    placeholder="Envoyer un message dans #discussion"
+                    placeholder={`Envoyer un message dans #${currentChannel?.name || "discussion"}`}
                     className="flex-1 bg-transparent text-[13px] text-foreground placeholder:text-muted-foreground outline-none"
                   />
                 </div>
               </div>
             </div>
 
-            {/* Members panel */}
             {showMembers && (
               <motion.div
                 initial={{ width: 0, opacity: 0 }}
@@ -254,6 +307,13 @@ export default function SpacesPage() {
           </div>
         </div>
       </div>
+
+      <CreateChannelModal
+        open={showCreateModal}
+        onClose={() => setShowCreateModal(false)}
+        categories={categoryNames}
+        onCreateChannel={handleCreateChannel}
+      />
     </AppLayout>
   );
 }
