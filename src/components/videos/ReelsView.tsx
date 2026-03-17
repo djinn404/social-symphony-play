@@ -120,6 +120,16 @@ export default function ReelsView({ onClose }: { onClose?: () => void }) {
           transition={{ duration: 0.3, ease: [0.2, 0, 0, 1] }}
           className="absolute inset-0"
         >
+          {/* Back button */}
+          {onClose && (
+            <button
+              onClick={onClose}
+              className="absolute top-12 left-4 z-10 w-9 h-9 rounded-full bg-white/10 backdrop-blur-sm flex items-center justify-center"
+            >
+              <ArrowLeft size={18} className="text-white" />
+            </button>
+          )}
+
           {/* Background image */}
           <img
             src={reel.thumbnail}
