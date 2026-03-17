@@ -1,11 +1,12 @@
 import { motion } from "framer-motion";
 import { useState } from "react";
-import { Play, Clock, Eye, MoreHorizontal, Filter } from "lucide-react";
+import { Play, Clock, Eye, MoreHorizontal, Filter, LayoutGrid, Smartphone } from "lucide-react";
 import avatar1 from "@/assets/avatar-1.jpg";
 import feed1 from "@/assets/feed-1.jpg";
 import feed2 from "@/assets/feed-2.jpg";
 import feed3 from "@/assets/feed-3.jpg";
 import AppLayout from "@/components/layout/AppLayout";
+import ReelsView from "@/components/videos/ReelsView";
 
 interface VideoItem {
   id: string;
@@ -73,8 +74,15 @@ const videos: VideoItem[] = [
   },
 ];
 
+type ViewMode = "list" | "reels";
+
 export default function VideosPage() {
   const [activeCategory, setActiveCategory] = useState("Pour vous");
+  const [viewMode, setViewMode] = useState<ViewMode>("list");
+
+  if (viewMode === "reels") {
+    return <ReelsView onClose={() => setViewMode("list")} />;
+  }
 
   return (
     <AppLayout>
@@ -85,9 +93,28 @@ export default function VideosPage() {
             <h1 className="text-base font-bold text-foreground" style={{ letterSpacing: "-0.03em" }}>
               Vidéos
             </h1>
-            <button className="text-muted-foreground hover:text-foreground">
-              <Filter size={18} />
-            </button>
+            <div className="flex items-center gap-2">
+              {/* View toggle */}
+              <div className="flex items-center bg-surface rounded-lg p-0.5">
+                <button
+                  onClick={() => setViewMode("list")}
+                  className={`p-1.5 rounded-md transition-colors ${
+                    viewMode === "list" ? "bg-foreground text-background" : "text-muted-foreground"
+                  }`}
+                >
+                  <LayoutGrid size={14} />
+                </button>
+                <button
+                  onClick={() => setViewMode("reels")}
+                  className="p-1.5 rounded-md text-muted-foreground hover:text-foreground transition-colors"
+                >
+                  <Smartphone size={14} />
+                </button>
+              </div>
+              <button className="text-muted-foreground hover:text-foreground">
+                <Filter size={18} />
+              </button>
+            </div>
           </div>
 
           {/* Categories */}
