@@ -60,7 +60,7 @@ const reels: Reel[] = [
   },
 ];
 
-export default function ReelsView() {
+export default function ReelsView({ onClose }: { onClose?: () => void }) {
   const [currentIndex, setCurrentIndex] = useState(0);
   const containerRef = useRef<HTMLDivElement>(null);
   const startY = useRef(0);
