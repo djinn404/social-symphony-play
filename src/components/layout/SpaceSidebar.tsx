@@ -1,6 +1,7 @@
 import { motion } from "framer-motion";
 import { useState } from "react";
 import { Plus } from "lucide-react";
+import { useNavigate, useLocation } from "react-router-dom";
 
 interface Space {
   id: string;
@@ -19,66 +20,50 @@ const spaces: Space[] = [
 ];
 
 export default function SpaceSidebar() {
-  const [activeSpace, setActiveSpace] = useState<string | null>(null);
+  const navigate = useNavigate();
+  const location = useLocation();
+  const isHome = location.pathname === "/" || location.pathname === "/explore" || location.pathname === "/videos" || location.pathname === "/profile";
 
   return (
-    <aside className="hidden md:flex flex-col items-center w-[68px] bg-background py-3 gap-2 border-r border-border/50">
-      {/* Home / Aura logo */}
+    <aside className="hidden md:flex flex-col items-center w-[60px] bg-background py-3 gap-1.5 border-r border-border/30">
       <motion.button
         whileTap={{ scale: 0.96 }}
-        onClick={() => setActiveSpace(null)}
-        className={`w-10 h-10 rounded-xl flex items-center justify-center text-sm font-bold transition-all duration-150 ${
-          activeSpace === null
-            ? "bg-accent text-accent-foreground rounded-xl"
-            : "bg-surface hover:bg-surface-hover text-muted-foreground hover:text-foreground shadow-aura hover:shadow-aura-hover"
+        onClick={() => navigate("/")}
+        className={`w-9 h-9 rounded-xl flex items-center justify-center text-xs font-bold transition-all duration-150 ${
+          isHome
+            ? "bg-accent text-accent-foreground"
+            : "bg-surface hover:bg-surface-hover text-muted-foreground hover:text-foreground"
         }`}
       >
         A
       </motion.button>
 
-      <div className="w-6 h-px bg-border my-1" />
+      <div className="w-5 h-px bg-border/50 my-0.5" />
 
-      {/* Spaces */}
       {spaces.map((space) => (
         <div key={space.id} className="relative group">
           <motion.button
             whileTap={{ scale: 0.96 }}
-            onClick={() => setActiveSpace(space.id)}
-            className={`w-10 h-10 flex items-center justify-center text-xs font-semibold transition-all duration-150 ${
-              activeSpace === space.id
-                ? "rounded-xl"
-                : "rounded-full hover:rounded-xl shadow-aura hover:shadow-aura-hover"
-            }`}
-            style={{
-              backgroundColor: activeSpace === space.id ? space.color : undefined,
-              color: activeSpace === space.id ? "#fff" : undefined,
-            }}
+            onClick={() => navigate("/spaces")}
+            className="w-9 h-9 rounded-full hover:rounded-xl flex items-center justify-center text-xs font-semibold bg-surface hover:bg-surface-hover text-muted-foreground hover:text-foreground transition-all duration-150"
           >
-            {activeSpace !== space.id && (
-              <span className="text-muted-foreground group-hover:text-foreground transition-colors">
-                {space.name.charAt(0)}
-              </span>
-            )}
-            {activeSpace === space.id && space.name.charAt(0)}
+            {space.name.charAt(0)}
           </motion.button>
-
           {space.hasNotification && (
-            <span className="absolute -right-0.5 top-0 w-2.5 h-2.5 bg-accent rounded-full border-2 border-background" />
+            <span className="absolute -right-0.5 top-0 w-2 h-2 bg-accent rounded-full border-[1.5px] border-background" />
           )}
-
-          {/* Tooltip */}
-          <div className="absolute left-full ml-3 top-1/2 -translate-y-1/2 px-3 py-1.5 bg-card rounded-lg shadow-aura text-xs font-medium opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap z-50">
-            <span className="text-foreground">{space.name}</span>
-            <span className="text-muted-foreground ml-2 font-mono-utility">{space.online} en ligne</span>
+          <div className="absolute left-full ml-2.5 top-1/2 -translate-y-1/2 px-2.5 py-1 bg-card rounded-lg shadow-aura text-[11px] font-medium opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap z-50 text-foreground">
+            {space.name}
+            <span className="text-muted-foreground ml-1.5 font-mono-utility">{space.online}</span>
           </div>
         </div>
       ))}
 
       <motion.button
         whileTap={{ scale: 0.96 }}
-        className="w-10 h-10 rounded-full flex items-center justify-center bg-surface hover:bg-surface-hover text-muted-foreground hover:text-accent shadow-aura hover:shadow-aura-hover transition-all duration-150 mt-1"
+        className="w-9 h-9 rounded-full flex items-center justify-center text-muted-foreground hover:text-accent hover:bg-surface transition-all duration-150 mt-0.5"
       >
-        <Plus size={18} />
+        <Plus size={16} />
       </motion.button>
     </aside>
   );
