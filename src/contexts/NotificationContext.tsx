@@ -29,10 +29,18 @@ interface NotificationContextType {
 
 const NotificationContext = createContext<NotificationContextType | null>(null);
 
+const defaultContext: NotificationContextType = {
+  notifications: [],
+  unreadCount: 0,
+  notifyNewPost: async () => {},
+  markAsRead: () => {},
+  markAllRead: () => {},
+  isLoading: false,
+};
+
 export function useNotifications() {
   const ctx = useContext(NotificationContext);
-  if (!ctx) throw new Error("useNotifications must be used within NotificationProvider");
-  return ctx;
+  return ctx ?? defaultContext;
 }
 
 export function NotificationProvider({ children }: { children: ReactNode }) {
