@@ -1,11 +1,11 @@
 import { motion } from "framer-motion";
-import { Heart, MessageCircle, Repeat2, Share, Bookmark, MoreHorizontal } from "lucide-react";
+import { Heart, MessageCircle, Repeat2, Share, Bookmark, MoreHorizontal, Sparkles } from "lucide-react";
 import avatar1 from "@/assets/avatar-1.jpg";
 import feed1 from "@/assets/feed-1.jpg";
 import feed2 from "@/assets/feed-2.jpg";
 import feed3 from "@/assets/feed-3.jpg";
 
-interface FeedPost {
+export interface FeedPost {
   id: string;
   author: { name: string; handle: string; avatar: string; verified?: boolean };
   text?: string;
@@ -14,9 +14,10 @@ interface FeedPost {
   comments: string;
   reposts: string;
   timestamp: string;
+  aiGenerated?: boolean;
 }
 
-const posts: FeedPost[] = [
+export const defaultPosts: FeedPost[] = [
   {
     id: "1",
     author: { name: "Nova FX", handle: "@nova.fx", avatar: avatar1, verified: true },
@@ -57,7 +58,11 @@ const posts: FeedPost[] = [
   },
 ];
 
-export default function FeedList() {
+interface FeedListProps {
+  posts: FeedPost[];
+}
+
+export default function FeedList({ posts }: FeedListProps) {
   return (
     <div className="flex flex-col divide-y divide-border/30">
       {posts.map((post, i) => (
@@ -88,36 +93,30 @@ export default function FeedList() {
                 <span className="text-xs text-muted-foreground truncate">{post.author.handle}</span>
                 <span className="text-muted-foreground text-xs">·</span>
                 <span className="font-mono-utility text-[11px] text-muted-foreground flex-shrink-0">{post.timestamp}</span>
+                {post.aiGenerated && (
+                  <Sparkles size={11} className="text-accent flex-shrink-0" />
+                )}
                 <button className="ml-auto text-muted-foreground hover:text-foreground">
                   <MoreHorizontal size={16} />
                 </button>
               </div>
 
-              {/* Text */}
               {post.text && (
-                <p className="text-[14px] text-foreground leading-[1.45] mt-1">
-                  {post.text}
-                </p>
+                <p className="text-[14px] text-foreground leading-[1.45] mt-1">{post.text}</p>
               )}
 
-              {/* Media */}
               {post.media && (
                 <div className={`relative rounded-xl overflow-hidden mt-2.5 ${post.media.aspect || "aspect-video"} bg-surface`}>
-                  <img
-                    src={post.media.src}
-                    alt=""
-                    className="w-full h-full object-cover"
-                  />
+                  <img src={post.media.src} alt="" className="w-full h-full object-cover" />
                 </div>
               )}
 
-              {/* Actions - X/Twitter style */}
               <div className="flex items-center justify-between mt-2.5 max-w-[360px]">
-                <ActionBtn icon={MessageCircle} count={post.comments} hoverColor="text-accent" />
-                <ActionBtn icon={Repeat2} count={post.reposts} hoverColor="text-online" />
-                <ActionBtn icon={Heart} count={post.likes} hoverColor="text-live" />
-                <ActionBtn icon={Share} hoverColor="text-accent" />
-                <ActionBtn icon={Bookmark} hoverColor="text-accent" />
+                <ActionBtn icon={MessageCircle} count={post.comments} />
+                <ActionBtn icon={Repeat2} count={post.reposts} />
+                <ActionBtn icon={Heart} count={post.likes} />
+                <ActionBtn icon={Share} />
+                <ActionBtn icon={Bookmark} />
               </div>
             </div>
           </div>
@@ -127,11 +126,11 @@ export default function FeedList() {
   );
 }
 
-function ActionBtn({ icon: Icon, count, hoverColor }: { icon: typeof Heart; count?: string; hoverColor: string }) {
+function ActionBtn({ icon: Icon, count }: { icon: typeof Heart; count?: string }) {
   return (
     <motion.button
       whileTap={{ scale: 0.96 }}
-      className={`flex items-center gap-1 text-muted-foreground hover:${hoverColor} transition-colors group`}
+      className="flex items-center gap-1 text-muted-foreground hover:text-foreground transition-colors"
     >
       <Icon size={16} strokeWidth={1.6} />
       {count && <span className="font-mono-utility text-[11px]">{count}</span>}
