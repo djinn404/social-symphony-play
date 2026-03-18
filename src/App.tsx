@@ -4,6 +4,7 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { NotificationProvider } from "@/contexts/NotificationContext";
+import { ThemeProvider } from "@/contexts/ThemeContext";
 import Index from "./pages/Index.tsx";
 import SpacesPage from "./pages/Spaces.tsx";
 import ProfilePage from "./pages/Profile.tsx";
@@ -16,21 +17,23 @@ const queryClient = new QueryClient();
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
-      <NotificationProvider>
-        <Toaster />
-        <Sonner />
-        <BrowserRouter>
-          <Routes>
-            <Route path="/" element={<Index />} />
-            <Route path="/spaces" element={<SpacesPage />} />
-            <Route path="/profile" element={<ProfilePage />} />
-            <Route path="/videos" element={<VideosPage />} />
-            <Route path="/explore" element={<ExplorePage />} />
-            {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-            <Route path="*" element={<NotFound />} />
-          </Routes>
-        </BrowserRouter>
-      </NotificationProvider>
+      <ThemeProvider>
+        <NotificationProvider>
+          <Toaster />
+          <Sonner />
+          <BrowserRouter>
+            <Routes>
+              <Route path="/" element={<Index />} />
+              <Route path="/spaces" element={<SpacesPage />} />
+              <Route path="/profile" element={<ProfilePage />} />
+              <Route path="/videos" element={<VideosPage />} />
+              <Route path="/explore" element={<ExplorePage />} />
+              {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+              <Route path="*" element={<NotFound />} />
+            </Routes>
+          </BrowserRouter>
+        </NotificationProvider>
+      </ThemeProvider>
     </TooltipProvider>
   </QueryClientProvider>
 );

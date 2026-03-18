@@ -15,9 +15,9 @@ export default function BottomDock() {
   const navigate = useNavigate();
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-50 md:left-[68px]">
-      <div className="backdrop-blur-xl bg-background/80 border-t border-border/30">
-        <div className="flex items-center justify-around h-14 max-w-lg mx-auto px-4">
+    <nav className="fixed bottom-4 left-4 right-4 z-50 md:left-[76px]">
+      <div className="chrome-glass rounded-2xl mx-auto max-w-lg">
+        <div className="flex items-center justify-around h-14 px-2">
           {dockItems.map((item) => {
             const Icon = item.icon;
             const isActive = location.pathname === item.path;
@@ -25,31 +25,28 @@ export default function BottomDock() {
             return (
               <motion.button
                 key={item.id}
-                whileTap={{ scale: 0.96 }}
+                whileTap={{ scale: 0.97 }}
                 onClick={() => navigate(item.path)}
-                className="relative flex flex-col items-center gap-0.5"
+                className="relative flex flex-col items-center gap-0.5 px-3 py-1"
               >
-                <Icon
-                  size={21}
-                  className={`transition-colors duration-150 ${
-                    isActive ? "text-foreground" : "text-muted-foreground"
-                  }`}
-                  strokeWidth={isActive ? 2.2 : 1.6}
-                />
+                <div className={`p-1.5 rounded-xl transition-all duration-200 ${
+                  isActive ? "bg-accent/15" : ""
+                }`}>
+                  <Icon
+                    size={20}
+                    className={`transition-colors duration-200 ${
+                      isActive ? "text-accent" : "text-muted-foreground"
+                    }`}
+                    strokeWidth={isActive ? 2.2 : 1.6}
+                  />
+                </div>
                 <span
-                  className={`text-[10px] transition-colors duration-150 ${
-                    isActive ? "text-foreground font-medium" : "text-muted-foreground"
+                  className={`text-[9px] transition-colors duration-200 ${
+                    isActive ? "text-accent font-medium" : "text-muted-foreground"
                   }`}
                 >
                   {item.label}
                 </span>
-                {isActive && (
-                  <motion.div
-                    layoutId="dock-indicator"
-                    className="absolute -top-0.5 w-5 h-0.5 bg-foreground rounded-full"
-                    transition={{ duration: 0.3, ease: [0.2, 0, 0, 1] }}
-                  />
-                )}
               </motion.button>
             );
           })}
