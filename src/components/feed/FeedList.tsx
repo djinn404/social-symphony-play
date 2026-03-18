@@ -64,20 +64,21 @@ interface FeedListProps {
 
 export default function FeedList({ posts }: FeedListProps) {
   return (
-    <div className="flex flex-col divide-y divide-border/30">
+    <div className="flex flex-col gap-4 pt-4">
       {posts.map((post, i) => (
         <motion.article
           key={post.id}
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ duration: 0.25, delay: i * 0.06 }}
-          className="px-4 py-3 hover:bg-surface/30 transition-colors"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4, delay: i * 0.08, ease: [0.22, 1, 0.36, 1] }}
+          whileHover={{ y: -2 }}
+          className="chrome-surface p-4"
         >
-          <div className="flex gap-3">
+          <div className="flex gap-3 relative z-10">
             <img
               src={post.author.avatar}
               alt={post.author.name}
-              className="w-9 h-9 rounded-full object-cover flex-shrink-0"
+              className="w-10 h-10 rounded-full object-cover flex-shrink-0 ring-1 ring-border"
             />
             <div className="flex-1 min-w-0">
               {/* Header */}
@@ -96,22 +97,22 @@ export default function FeedList({ posts }: FeedListProps) {
                 {post.aiGenerated && (
                   <Sparkles size={11} className="text-accent flex-shrink-0" />
                 )}
-                <button className="ml-auto text-muted-foreground hover:text-foreground">
+                <button className="ml-auto text-muted-foreground hover:text-foreground transition-colors">
                   <MoreHorizontal size={16} />
                 </button>
               </div>
 
               {post.text && (
-                <p className="text-[14px] text-foreground leading-[1.45] mt-1">{post.text}</p>
+                <p className="text-[14px] text-foreground leading-[1.5] mt-1.5">{post.text}</p>
               )}
 
               {post.media && (
-                <div className={`relative rounded-xl overflow-hidden mt-2.5 ${post.media.aspect || "aspect-video"} bg-surface`}>
+                <div className={`relative rounded-xl overflow-hidden mt-3 ${post.media.aspect || "aspect-video"} bg-muted`}>
                   <img src={post.media.src} alt="" className="w-full h-full object-cover" />
                 </div>
               )}
 
-              <div className="flex items-center justify-between mt-2.5 max-w-[360px]">
+              <div className="flex items-center justify-between mt-3 max-w-[360px]">
                 <ActionBtn icon={MessageCircle} count={post.comments} />
                 <ActionBtn icon={Repeat2} count={post.reposts} />
                 <ActionBtn icon={Heart} count={post.likes} />
@@ -129,8 +130,8 @@ export default function FeedList({ posts }: FeedListProps) {
 function ActionBtn({ icon: Icon, count }: { icon: typeof Heart; count?: string }) {
   return (
     <motion.button
-      whileTap={{ scale: 0.96 }}
-      className="flex items-center gap-1 text-muted-foreground hover:text-foreground transition-colors"
+      whileTap={{ scale: 0.97 }}
+      className="flex items-center gap-1.5 text-muted-foreground hover:text-foreground transition-colors duration-200 py-1 px-1.5 rounded-lg hover:bg-surface-hover"
     >
       <Icon size={16} strokeWidth={1.6} />
       {count && <span className="font-mono-utility text-[11px]">{count}</span>}

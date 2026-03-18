@@ -4,6 +4,7 @@ import { Hash, Volume2, ChevronDown, Plus, Settings, Users, Mic, Headphones, Loc
 import avatar1 from "@/assets/avatar-1.jpg";
 import AppLayout from "@/components/layout/AppLayout";
 import CreateChannelModal from "@/components/spaces/CreateChannelModal";
+import ThemeToggle from "@/components/ThemeToggle";
 
 interface Channel {
   id: string;
@@ -121,7 +122,7 @@ export default function SpacesPage() {
       <div className="flex-1 overflow-y-auto py-2 px-2">
         {categories.map((cat) => (
           <div key={cat.name} className="mb-3">
-            <div className="flex items-center justify-between px-1 mb-1 group">
+            <div className="flex items-center justify-between px-2 mb-1 group">
               <div className="flex items-center gap-1">
                 <ChevronDown size={10} className="text-muted-foreground" />
                 <span className="text-[10px] font-semibold text-muted-foreground tracking-wider">{cat.name}</span>
@@ -137,10 +138,10 @@ export default function SpacesPage() {
               <button
                 key={ch.id}
                 onClick={() => { setActiveChannel(ch.id); setShowMobileSidebar(false); }}
-                className={`w-full flex items-center gap-2 px-2 py-1 rounded-md text-[13px] transition-colors ${
+                className={`w-full flex items-center gap-2 px-2.5 py-1.5 rounded-xl text-[13px] transition-all duration-200 ${
                   activeChannel === ch.id
-                    ? "bg-surface-active text-foreground"
-                    : "text-muted-foreground hover:text-foreground hover:bg-surface/50"
+                    ? "bg-accent/10 text-foreground"
+                    : "text-muted-foreground hover:text-foreground hover:bg-surface-hover"
                 }`}
               >
                 {getChannelIcon(ch.type)}
@@ -157,10 +158,10 @@ export default function SpacesPage() {
         ))}
       </div>
 
-      <div className="p-2 border-t border-border/30">
+      <div className="p-2 border-t border-border">
         <button
           onClick={() => setShowCreateModal(true)}
-          className="w-full flex items-center gap-2 px-2 py-1.5 rounded-md text-[12px] text-muted-foreground hover:text-foreground hover:bg-surface/50 transition-colors"
+          className="w-full flex items-center gap-2 px-2.5 py-1.5 rounded-xl text-[12px] text-muted-foreground hover:text-foreground hover:bg-surface-hover transition-colors"
         >
           <Plus size={14} />
           <span>Créer un salon</span>
@@ -173,25 +174,25 @@ export default function SpacesPage() {
     <AppLayout>
       <div className="flex h-full">
         {/* Desktop channel sidebar */}
-        <div className="w-[220px] bg-surface/50 border-r border-border/30 hidden md:flex flex-col">
-          <div className="h-12 flex items-center justify-between px-3 border-b border-border/30">
+        <div className="w-[220px] border-r border-border hidden md:flex flex-col bg-surface/30">
+          <div className="h-12 flex items-center justify-between px-3 border-b border-border">
             <h2 className="text-sm font-semibold text-foreground truncate">Design Hub</h2>
             <ChevronDown size={16} className="text-muted-foreground" />
           </div>
           {channelList}
-          <div className="p-2 border-t border-border/30 flex items-center gap-2">
+          <div className="p-2 border-t border-border flex items-center gap-2">
             <div className="relative">
-              <img src={avatar1} alt="" className="w-7 h-7 rounded-full object-cover" />
-              <span className="absolute bottom-0 right-0 w-2.5 h-2.5 bg-online rounded-full border-2 border-surface" />
+              <img src={avatar1} alt="" className="w-7 h-7 rounded-xl object-cover" />
+              <span className="absolute bottom-0 right-0 w-2.5 h-2.5 bg-online rounded-full border-2 border-background" />
             </div>
             <div className="flex-1 min-w-0">
               <p className="text-[11px] font-medium text-foreground truncate">You</p>
               <p className="text-[9px] text-muted-foreground">En ligne</p>
             </div>
             <div className="flex gap-1">
-              <button className="text-muted-foreground hover:text-foreground"><Mic size={14} /></button>
-              <button className="text-muted-foreground hover:text-foreground"><Headphones size={14} /></button>
-              <button className="text-muted-foreground hover:text-foreground"><Settings size={14} /></button>
+              <button className="text-muted-foreground hover:text-foreground transition-colors"><Mic size={14} /></button>
+              <button className="text-muted-foreground hover:text-foreground transition-colors"><Headphones size={14} /></button>
+              <button className="text-muted-foreground hover:text-foreground transition-colors"><Settings size={14} /></button>
             </div>
           </div>
         </div>
@@ -199,46 +200,46 @@ export default function SpacesPage() {
         {/* Mobile sidebar overlay */}
         {showMobileSidebar && (
           <>
-            <div className="fixed inset-0 bg-background/60 z-40 md:hidden" onClick={() => setShowMobileSidebar(false)} />
+            <div className="fixed inset-0 bg-background/60 backdrop-blur-sm z-40 md:hidden" onClick={() => setShowMobileSidebar(false)} />
             <motion.div
               initial={{ x: -260 }}
               animate={{ x: 0 }}
               exit={{ x: -260 }}
-              transition={{ duration: 0.2, ease: [0.2, 0, 0, 1] }}
-              className="fixed left-0 top-0 bottom-0 w-[260px] bg-card z-50 flex flex-col md:hidden"
+              transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
+              className="fixed left-0 top-0 bottom-0 w-[260px] bg-card z-50 flex flex-col md:hidden chrome-surface"
             >
-              <div className="h-12 flex items-center justify-between px-3 border-b border-border/30">
+              <div className="h-12 flex items-center justify-between px-3 border-b border-border relative z-10">
                 <h2 className="text-sm font-semibold text-foreground">Design Hub</h2>
                 <button onClick={() => setShowMobileSidebar(false)} className="text-muted-foreground">
                   <ChevronDown size={16} className="rotate-90" />
                 </button>
               </div>
-              {channelList}
+              <div className="relative z-10 flex-1 flex flex-col">{channelList}</div>
             </motion.div>
           </>
         )}
 
         {/* Chat area */}
         <div className="flex-1 flex flex-col">
-          <div className="h-12 flex items-center justify-between px-4 border-b border-border/30">
+          <div className="h-12 flex items-center justify-between px-4 border-b border-border chrome-glass">
             <div className="flex items-center gap-2">
-              <button onClick={() => setShowMobileSidebar(true)} className="md:hidden text-muted-foreground hover:text-foreground">
+              <button onClick={() => setShowMobileSidebar(true)} className="md:hidden text-muted-foreground hover:text-foreground transition-colors">
                 <Menu size={18} />
               </button>
               {getChannelIcon(currentChannel?.type || "text", 16)}
               <span className="text-sm font-medium text-foreground">{currentChannel?.name || "discussion"}</span>
             </div>
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2">
+              <ThemeToggle />
               <button
                 onClick={() => setShowCreateModal(true)}
                 className="text-muted-foreground hover:text-accent transition-colors"
-                title="Créer un salon"
               >
                 <Plus size={16} />
               </button>
               <button
                 onClick={() => setShowMembers(!showMembers)}
-                className={`text-muted-foreground hover:text-foreground transition-colors ${showMembers ? "text-foreground" : ""}`}
+                className={`transition-colors ${showMembers ? "text-accent" : "text-muted-foreground hover:text-foreground"}`}
               >
                 <Users size={16} />
               </button>
@@ -247,15 +248,16 @@ export default function SpacesPage() {
 
           <div className="flex flex-1 overflow-hidden">
             <div className="flex-1 flex flex-col">
-              <div className="flex-1 overflow-y-auto p-4 space-y-4">
-                {mockMessages.map((msg) => (
+              <div className="flex-1 overflow-y-auto p-4 space-y-3">
+                {mockMessages.map((msg, i) => (
                   <motion.div
                     key={msg.id}
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    className="flex gap-3 group hover:bg-surface/30 -mx-2 px-2 py-1 rounded-md transition-colors"
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: i * 0.05, ease: [0.22, 1, 0.36, 1] }}
+                    className="flex gap-3 group hover:bg-surface-hover -mx-2 px-2 py-2 rounded-xl transition-colors"
                   >
-                    <img src={msg.avatar} alt="" className="w-8 h-8 rounded-full object-cover flex-shrink-0 mt-0.5" />
+                    <img src={msg.avatar} alt="" className="w-8 h-8 rounded-xl object-cover flex-shrink-0 mt-0.5" />
                     <div>
                       <div className="flex items-baseline gap-2">
                         <span className="text-[13px] font-semibold text-foreground">{msg.author}</span>
@@ -267,8 +269,8 @@ export default function SpacesPage() {
                 ))}
               </div>
 
-              <div className="p-3 border-t border-border/30">
-                <div className="flex items-center gap-2 bg-surface rounded-xl px-3 py-2">
+              <div className="p-3 border-t border-border">
+                <div className="flex items-center gap-2 chrome-glass rounded-xl px-3.5 py-2.5">
                   <Plus size={18} className="text-muted-foreground" />
                   <input
                     type="text"
@@ -283,16 +285,17 @@ export default function SpacesPage() {
               <motion.div
                 initial={{ width: 0, opacity: 0 }}
                 animate={{ width: 200, opacity: 1 }}
-                className="border-l border-border/30 overflow-hidden hidden md:block"
+                transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
+                className="border-l border-border overflow-hidden hidden md:block"
               >
                 <div className="p-3">
                   <p className="text-[10px] font-semibold text-muted-foreground tracking-wider mb-2">
                     EN LIGNE — {onlineMembers.length}
                   </p>
                   {onlineMembers.map((m) => (
-                    <div key={m.name} className="flex items-center gap-2 py-1.5 px-1 rounded-md hover:bg-surface/50 transition-colors">
+                    <div key={m.name} className="flex items-center gap-2 py-1.5 px-1.5 rounded-xl hover:bg-surface-hover transition-colors">
                       <div className="relative">
-                        <img src={m.avatar} alt="" className="w-7 h-7 rounded-full object-cover" />
+                        <img src={m.avatar} alt="" className="w-7 h-7 rounded-xl object-cover" />
                         <span className="absolute bottom-0 right-0 w-2 h-2 bg-online rounded-full border border-background" />
                       </div>
                       <div>
