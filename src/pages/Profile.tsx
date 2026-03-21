@@ -1,26 +1,13 @@
 import { motion } from "framer-motion";
-import { Settings, Grid3x3, Bookmark, Play, Link as LinkIcon, MapPin, Calendar } from "lucide-react";
+import { Settings, Grid3x3, Bookmark, Play, Link as LinkIcon, MapPin, Calendar, LogOut } from "lucide-react";
 import { useState } from "react";
-import avatar1 from "@/assets/avatar-1.jpg";
-import feed1 from "@/assets/feed-1.jpg";
-import feed2 from "@/assets/feed-2.jpg";
-import feed3 from "@/assets/feed-3.jpg";
 import AppLayout from "@/components/layout/AppLayout";
 import ThemeToggle from "@/components/ThemeToggle";
-
-const profileData = {
-  name: "Nova FX",
-  handle: "@nova.fx",
-  avatar: avatar1,
-  verified: true,
-  bio: "Créateur de contenu visuel · Motion designer · J'explore les frontières entre technologie et art 🌌",
-  location: "Tokyo, Japan",
-  website: "novafx.studio",
-  joined: "Mars 2024",
-  followers: "24.3k",
-  following: "892",
-  posts: "1,247",
-};
+import { useAuth } from "@/contexts/AuthContext";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
+import { formatDistanceToNow } from "date-fns";
+import { fr } from "date-fns/locale";
 
 const tabs = [
   { id: "posts", label: "Posts", icon: Grid3x3 },
@@ -28,99 +15,120 @@ const tabs = [
   { id: "saved", label: "Enregistrés", icon: Bookmark },
 ];
 
-const postGrid = [feed1, feed2, feed3, feed1, feed2, feed3, feed1, feed2, feed3];
-
 export default function ProfilePage() {
+  const { user, profile, signOut, refreshProfile } = useAuth();
   const [activeTab, setActiveTab] = useState("posts");
   const [isEditing, setIsEditing] = useState(false);
-  const [bio, setBio] = useState(profileData.bio);
+  const [bio, setBio] = useState(profile?.bio || "");
+  const [displayName, setDisplayName] = useState(profile?.display_name || "");
+  const [location, setLocation] = useState(profile?.location || "");
+  const [website, setWebsite] = useState(profile?.website || "");
+
+  const handleSave = async () => {
+    if (!user) return;
+    const { error } = await supabase
+      .from("profiles")
+      .update({ bio, display_name: displayName, location, website, updated_at: new Date().toISOString() })
+      .eq("id", user.id);
+    if (error) {
+      toast.error("Erreur de sauvegarde");
+    } else {
+      toast.success("Profil mis à jour !");
+      await refreshProfile();
+      setIsEditing(false);
+    }
+  };
+
+  const avatar = profile?.avatar_url || `https://api.dicebear.com/7.x/avataaars/svg?seed=${user?.id}`;
+  const joinedDate = user?.created_at ? formatDistanceToNow(new Date(user.created_at), { locale: fr, addSuffix: true }) : "";
 
   return (
     <AppLayout>
       <div className="max-w-xl mx-auto pb-24">
-        {/* Header */}
         <div className="flex items-center justify-between px-5 h-12 border-b border-border">
-          <span className="text-sm font-semibold text-foreground">{profileData.handle}</span>
+          <span className="text-sm font-semibold text-foreground">@{profile?.username}</span>
           <div className="flex items-center gap-2">
             <ThemeToggle />
-            <button className="text-muted-foreground hover:text-foreground transition-colors">
-              <Settings size={18} />
+            <button onClick={signOut} className="text-muted-foreground hover:text-foreground transition-colors" title="Déconnexion">
+              <LogOut size={18} />
             </button>
           </div>
         </div>
 
-        {/* Profile info */}
         <div className="px-5 pt-5 pb-4">
           <div className="flex items-start gap-4">
-            <img
-              src={profileData.avatar}
-              alt={profileData.name}
-              className="w-[76px] h-[76px] rounded-2xl object-cover ring-2 ring-border"
-            />
+            <img src={avatar} alt="" className="w-[76px] h-[76px] rounded-2xl object-cover ring-2 ring-border" />
             <div className="flex-1">
-              <div className="flex items-center gap-2">
+              {isEditing ? (
+                <input
+                  value={displayName}
+                  onChange={(e) => setDisplayName(e.target.value)}
+                  className="text-lg font-bold text-foreground bg-transparent border-b border-accent/50 outline-none w-full"
+                  placeholder="Nom"
+                />
+              ) : (
                 <h1 className="text-lg font-bold text-foreground tracking-tight">
-                  {profileData.name}
+                  {profile?.display_name || profile?.username}
                 </h1>
-                {profileData.verified && (
-                  <svg className="w-4 h-4 text-accent" viewBox="0 0 24 24" fill="currentColor">
-                    <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z" />
-                  </svg>
-                )}
-              </div>
-
-              <div className="flex gap-4 mt-2">
-                <StatItem value={profileData.posts} label="posts" />
-                <StatItem value={profileData.followers} label="followers" />
-                <StatItem value={profileData.following} label="following" />
-              </div>
+              )}
+              <p className="text-xs text-muted-foreground mt-1">{user?.email}</p>
             </div>
           </div>
 
-          {/* Bio */}
           <div className="mt-4">
             {isEditing ? (
-              <div className="space-y-2">
+              <div className="space-y-3">
                 <textarea
                   value={bio}
                   onChange={(e) => setBio(e.target.value)}
-                  className="w-full bg-surface-hover rounded-xl px-3.5 py-2.5 text-[13px] text-foreground outline-none resize-none border border-border focus:border-accent/50 transition-colors"
+                  className="w-full bg-muted/50 rounded-xl px-3.5 py-2.5 text-[13px] text-foreground outline-none resize-none border border-border focus:border-accent/50 transition-colors"
                   rows={3}
                   maxLength={160}
+                  placeholder="Ta bio..."
+                />
+                <input
+                  value={location}
+                  onChange={(e) => setLocation(e.target.value)}
+                  placeholder="Localisation"
+                  className="w-full bg-muted/50 rounded-xl px-3.5 py-2 text-[13px] text-foreground outline-none border border-border focus:border-accent/50 transition-colors"
+                />
+                <input
+                  value={website}
+                  onChange={(e) => setWebsite(e.target.value)}
+                  placeholder="Site web"
+                  className="w-full bg-muted/50 rounded-xl px-3.5 py-2 text-[13px] text-foreground outline-none border border-border focus:border-accent/50 transition-colors"
                 />
                 <div className="flex gap-2">
-                  <button
-                    onClick={() => setIsEditing(false)}
-                    className="px-4 py-1.5 rounded-xl bg-accent text-accent-foreground text-xs font-medium chrome-btn"
-                  >
+                  <button onClick={handleSave} className="px-4 py-1.5 rounded-xl bg-accent text-accent-foreground text-xs font-medium chrome-btn">
                     Sauvegarder
                   </button>
-                  <button
-                    onClick={() => { setBio(profileData.bio); setIsEditing(false); }}
-                    className="px-4 py-1.5 rounded-xl chrome-glass text-foreground text-xs"
-                  >
+                  <button onClick={() => setIsEditing(false)} className="px-4 py-1.5 rounded-xl chrome-glass text-foreground text-xs">
                     Annuler
                   </button>
                 </div>
               </div>
             ) : (
-              <p className="text-[13px] text-foreground leading-relaxed">{bio}</p>
+              <>
+                <p className="text-[13px] text-foreground leading-relaxed">{profile?.bio || "Pas encore de bio"}</p>
+                <div className="flex flex-wrap gap-x-3 gap-y-1 mt-2">
+                  {profile?.location && (
+                    <span className="flex items-center gap-1 text-[11px] text-muted-foreground">
+                      <MapPin size={11} /> {profile.location}
+                    </span>
+                  )}
+                  {profile?.website && (
+                    <span className="flex items-center gap-1 text-[11px] text-accent">
+                      <LinkIcon size={11} /> {profile.website}
+                    </span>
+                  )}
+                  <span className="flex items-center gap-1 text-[11px] text-muted-foreground">
+                    <Calendar size={11} /> Rejoint {joinedDate}
+                  </span>
+                </div>
+              </>
             )}
-
-            <div className="flex flex-wrap gap-x-3 gap-y-1 mt-2">
-              <span className="flex items-center gap-1 text-[11px] text-muted-foreground">
-                <MapPin size={11} /> {profileData.location}
-              </span>
-              <span className="flex items-center gap-1 text-[11px] text-accent">
-                <LinkIcon size={11} /> {profileData.website}
-              </span>
-              <span className="flex items-center gap-1 text-[11px] text-muted-foreground">
-                <Calendar size={11} /> Rejoint {profileData.joined}
-              </span>
-            </div>
           </div>
 
-          {/* Action buttons */}
           <div className="flex gap-2 mt-4">
             <motion.button
               whileTap={{ scale: 0.97 }}
@@ -130,17 +138,9 @@ export default function ProfilePage() {
             >
               Modifier le profil
             </motion.button>
-            <motion.button
-              whileTap={{ scale: 0.97 }}
-              whileHover={{ scale: 1.02 }}
-              className="flex-1 py-2 rounded-xl chrome-glass chrome-btn text-foreground text-xs font-medium"
-            >
-              Partager le profil
-            </motion.button>
           </div>
         </div>
 
-        {/* Tabs */}
         <div className="flex border-b border-border">
           {tabs.map((tab) => {
             const Icon = tab.icon;
@@ -166,34 +166,12 @@ export default function ProfilePage() {
           })}
         </div>
 
-        {/* Grid */}
-        <div className="grid grid-cols-3 gap-1 p-2">
-          {postGrid.map((src, i) => (
-            <motion.div
-              key={i}
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ delay: i * 0.04, ease: [0.22, 1, 0.36, 1] }}
-              whileHover={{ scale: 1.03 }}
-              className="aspect-square relative group cursor-pointer rounded-xl overflow-hidden"
-            >
-              <img src={src} alt="" className="w-full h-full object-cover" />
-              <div className="absolute inset-0 bg-background/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center backdrop-blur-sm rounded-xl">
-                <span className="text-foreground text-xs font-medium">♥ 2.4k</span>
-              </div>
-            </motion.div>
-          ))}
+        <div className="p-8 text-center text-muted-foreground text-xs">
+          {activeTab === "posts" && "Tes posts apparaîtront ici"}
+          {activeTab === "videos" && "Tes vidéos apparaîtront ici"}
+          {activeTab === "saved" && "Tes posts enregistrés apparaîtront ici"}
         </div>
       </div>
     </AppLayout>
-  );
-}
-
-function StatItem({ value, label }: { value: string; label: string }) {
-  return (
-    <div className="text-center">
-      <span className="text-sm font-bold text-foreground">{value}</span>
-      <span className="text-[11px] text-muted-foreground ml-1">{label}</span>
-    </div>
   );
 }
