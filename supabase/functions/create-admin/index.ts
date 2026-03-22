@@ -10,22 +10,32 @@ Deno.serve(async () => {
     const email = "admin@aura-social.app";
     const password = "AuraAdmin2025!";
 
+    // Create user without trigger dependency
     const { data, error } = await supabase.auth.admin.createUser({
       email,
       password,
       email_confirm: true,
-      user_metadata: { username: "admin", display_name: "Admin Aura" },
     });
 
     if (error) {
-      console.error("Auth error:", JSON.stringify(error));
-      return new Response(JSON.stringify({ error: error.message, code: error.status }), { status: 400 });
+      return new Response(JSON.stringify({ error: error.message }), { status: 400 });
     }
 
-    console.log("User created:", data.user.id);
-    return new Response(JSON.stringify({ success: true, user_id: data.user.id, email }), { status: 200 });
+    // Manually create profile
+    const { error: profileError } = await supabase.from("profiles").insert({
+      id: data.user.id,
+      username: "admin",
+      display_name: "Admin Aura",
+      avatar_url: "https://api.dicebear.com/7.x/avataaars/svg?seed=admin",
+      bio: "Administrateur de la plateforme Aura",
+    });
+
+    if (profileError) {
+      return new Response(JSON.stringify({ error: profileError.message }), { status: 400 });
+    }
+
+    return new Response(JSON.stringify({ success: true, email, password, user_id: data.user.id }), { status: 200 });
   } catch (e) {
-    console.error("Caught:", e.message);
     return new Response(JSON.stringify({ caught: e.message }), { status: 500 });
   }
 });
