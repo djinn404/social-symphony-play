@@ -6,8 +6,16 @@ Deno.serve(async () => {
     Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
   );
 
-  const email = "admin@aura.app";
-  const password = "Admin2025!";
+  const email = "admin@aura-social.app";
+  const password = "AuraAdmin2025!";
+
+  // Try to find existing user first
+  const { data: existingUsers } = await supabase.auth.admin.listUsers();
+  const existing = existingUsers?.users?.find(u => u.email === email);
+  
+  if (existing) {
+    return new Response(JSON.stringify({ success: true, message: "User already exists", user_id: existing.id }), { status: 200 });
+  }
 
   const { data, error } = await supabase.auth.admin.createUser({
     email,
