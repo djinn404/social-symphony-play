@@ -1,0 +1,3 @@
+git add .npmrc
+git commit -m "Force npm install legacy-peer-deps for Vercel"
+git push origin main
